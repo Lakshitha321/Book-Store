@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
 import bodyParser from "body-parser";
-// import routes from "./routes/index.js";
+import routes from "./Routes/bookRoutes.js";
 const app = express();
 
 
@@ -19,7 +19,7 @@ const MONGODB_URI = 'mongodb://localhost:27017/bookclubdb';
 mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true}).then(() => console.log("MongoDB connected")).catch(err => console.log(err));
 
 
-// routes(app);
+routes(app);
 app.get("/", (req, res) => {
   res.send("welcome to the server!")
 });

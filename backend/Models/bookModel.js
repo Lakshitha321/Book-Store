@@ -15,11 +15,11 @@ export const BookSchema = new schema({
   },
   genre:{
     type: String,
-    required: true,
+
   },
   publishedYear:{
     type: Number,
-    required: true,
+    
   },
   isAvailable:{
     type: Boolean,
