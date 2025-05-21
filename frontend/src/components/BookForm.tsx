@@ -5,6 +5,7 @@ interface BookFormProps {
   book?: BookI | null;
   onSubmit: (bookData: Omit<BookI, '_id' | 'createdAt'>) => void;
   onCancel: () => void;
+  isModal?: boolean;
 }
 
 const emptyBook = {
@@ -15,7 +16,7 @@ const emptyBook = {
   isAvailable: true,
 };
 
-const BookForm: React.FC<BookFormProps> = ({ book, onSubmit, onCancel }) => {
+const BookForm: React.FC<BookFormProps> = ({ book, onSubmit, onCancel, isModal = false }) => {
   const [formData, setFormData] = useState<Omit<BookI, '_id' | 'createdAt'>>(emptyBook);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -80,10 +81,12 @@ const BookForm: React.FC<BookFormProps> = ({ book, onSubmit, onCancel }) => {
   };
 
   return (
-    <div className="bg-white shadow-card rounded-lg p-6">
-      <h2 className="text-xl font-semibold text-primary-800 mb-4">
-        {book ? 'Edit Book' : 'Add New Book'}
-      </h2>
+    <div className={`bg-white ${!isModal ? 'shadow-card rounded-lg p-6' : ''}`}>
+      {!isModal && (
+        <h2 className="text-xl font-semibold text-primary-800 mb-4">
+          {book ? 'Edit Book' : 'Add New Book'}
+        </h2>
+      )}
       
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">

@@ -4,6 +4,7 @@ import { type BookI } from "../types/book";
 import BooksList from "../components/BooksList";
 import BookDetails from "../components/BookDetails";
 import BookForm from "../components/BookForm";
+import Modal from "../components/Modal";
 
 const API_BASE_URL = "http://localhost:4000";
 
@@ -13,7 +14,7 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [showAddBookForm, setShowAddBookForm] = useState<boolean>(false);
+  const [showModal, setShowModal] = useState<boolean>(false);
   const [editingBook, setEditingBook] = useState<BookI | null>(null);
 
   // Fetch all books
@@ -42,7 +43,7 @@ const App: React.FC = () => {
     try {
       const response = await axios.post(`${API_BASE_URL}/books`, bookData);
       setBooks(prevBooks => [...prevBooks, response.data]);
-      setShowAddBookForm(false);
+      closeModal();
     } catch (err) {
       console.error("Error adding book:", err);
       setError("Failed to add book. Please try again.");
@@ -62,7 +63,7 @@ const App: React.FC = () => {
         prevBooks.map(book => book._id === editingBook._id ? response.data : book)
       );
       setCurrentBook(response.data);
-      setEditingBook(null);
+      closeModal();
     } catch (err) {
       console.error("Error updating book:", err);
       setError("Failed to update book. Please try again.");
@@ -98,15 +99,30 @@ const App: React.FC = () => {
     }
   };
 
-  const handleFormCancel = () => {
+  const closeModal = () => {
     setEditingBook(null);
-    setShowAddBookForm(false);
+    setShowModal(false);
   };
 
   const handleEditBook = (book: BookI) => {
     setEditingBook(book);
-    setShowAddBookForm(false);
+    setShowModal(true);
   };
+
+  const handleAddNewBook = () => {
+    setEditingBook(null);
+    setShowModal(true);
+  };
+
+  // Filtered books based on search query
+  const filteredBooks = books.filter(book => {
+    const query = searchQuery.toLowerCase();
+    return (
+      book.title.toLowerCase().includes(query) ||
+      book.author.toLowerCase().includes(query) ||
+      book.genre.toLowerCase().includes(query)
+    );
+  });
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -154,10 +170,7 @@ const App: React.FC = () => {
             </div>
           </div>
           <button
-            onClick={() => {
-              setShowAddBookForm(true);
-              setEditingBook(null);
-            }}
+            onClick={handleAddNewBook}
             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
           >
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -182,7 +195,7 @@ const App: React.FC = () => {
                 </div>
               ) : (
                 <BooksList 
-                  books={books} 
+                  books={filteredBooks}
                   handleSetCurrentBook={setCurrentBook} 
                   searchQuery={searchQuery}
                 />
@@ -190,26 +203,29 @@ const App: React.FC = () => {
             </div>
             
             <div className="md:col-span-2">
-              {showAddBookForm || editingBook ? (
-                <BookForm 
-                  book={editingBook}
-                  onSubmit={handleFormSubmit}
-                  onCancel={handleFormCancel}
-                />
-              ) : (
-                <>
-                  <h2 className="text-lg font-medium text-gray-900 mb-3">Book Details</h2>
-                  <BookDetails 
-                    book={currentBook} 
-                    onEdit={handleEditBook}
-                    onDelete={handleDeleteBook}
-                  />
-                </>
-              )}
+              <h2 className="text-lg font-medium text-gray-900 mb-3">Book Details</h2>
+              <BookDetails 
+                book={currentBook} 
+                onEdit={handleEditBook}
+                onDelete={handleDeleteBook}
+              />
             </div>
           </div>
         )}
       </main>
+
+      {/* Modal for adding/editing books */}
+      <Modal
+        isOpen={showModal}
+        onClose={closeModal}
+        title={editingBook ? "Edit Book" : "Add New Book"}
+      >
+        <BookForm 
+          book={editingBook}
+          onSubmit={handleFormSubmit}
+          onCancel={closeModal}
+        />
+      </Modal>
 
       <footer className="bg-gray-100 border-t border-gray-200 py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
